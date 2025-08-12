@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import ChatBox from './ChatBox';
 import InputArea from './InputArea';
 import { ENDPOINTS } from '../../utils/config';
 
 const AssistantApp = () => {
+  const navigate = useNavigate();
+  
   const [chats, setChats] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(null);
   const [isListening, setIsListening] = useState(false);
@@ -15,11 +18,10 @@ const AssistantApp = () => {
   const [emotionResult, setEmotionResult] = useState(null);
   const [activeChatId, setActiveChatId] = useState(null);
   
-  // New states for recording timer and preview
+  // States for recording timer and preview
   const [recordingTime, setRecordingTime] = useState(3);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
-  // New state to track LLM response
   const [isWaitingForLLM, setIsWaitingForLLM] = useState(false);
   
   const recognitionRef = useRef(null);
@@ -28,11 +30,10 @@ const AssistantApp = () => {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const timerRef = useRef(null);
-  const audioRef = useRef(null);
+  const audioRef = useRef(null); // This will be passed to InputArea
   const speechTextRef = useRef('');
-  
   const isRecordingActiveRef = useRef(false);
-
+  
   // Load chats from localStorage on mount
   useEffect(() => {
     const savedChats = localStorage.getItem('banglaMoodChats');
@@ -63,12 +64,16 @@ const AssistantApp = () => {
   useEffect(() => {
     if (chats.length > 0) {
       localStorage.setItem('banglaMoodChats', JSON.stringify(chats));
+    } else {
+      localStorage.removeItem('banglaMoodChats');
     }
   }, [chats]);
   
   useEffect(() => {
     if (currentChatId !== null) {
       localStorage.setItem('banglaMoodCurrentChatId', currentChatId.toString());
+    } else {
+      localStorage.removeItem('banglaMoodCurrentChatId');
     }
   }, [currentChatId]);
   
@@ -77,57 +82,77 @@ const AssistantApp = () => {
     isListeningRef.current = isListening;
   }, [isListening]);
   
-  // Initialize speech recognition
-useEffect(() => {
-  if (window.SpeechRecognition || window.webkitSpeechRecognition) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = "bn-BD";
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
-    
-    recognition.onresult = (event) => {
-      let interimTranscript = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscriptRef.current += transcript + ' ';
-        } else {
-          interimTranscript += transcript;
-        }
-      }
-      setSpeechText(finalTranscriptRef.current + interimTranscript);
-    };
-    
-    recognition.onend = () => {
-      console.log('Speech recognition ended');
-      setIsListening(false);
-      // Don't auto-send - let user choose via preview
-    };
-    
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
-      setIsListening(false);
-    };
-    
-    recognitionRef.current = recognition;
-  } else {
-    setIsMicDisabled(true);
-  }
-  
-  return () => {
-    if (recognitionRef.current) {
+  // Stop speech recognition when waiting for LLM
+  useEffect(() => {
+    if (isWaitingForLLM && recognitionRef.current && isListening) {
+      console.log('Stopping recognition because waiting for LLM');
       try {
         recognitionRef.current.stop();
-      } catch (error) {
-        console.log('Error stopping recognition on cleanup:', error);
+      } catch (e) {
+        console.error('Error stopping recognition:', e);
       }
+      setIsListening(false);
     }
-  };
-}, [currentChatId]);
+  }, [isWaitingForLLM, isListening]);
   
-
+  // Initialize speech recognition
+  useEffect(() => {
+    const initSpeechRecognition = () => {
+      if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = "bn-BD";
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+        
+        recognition.onresult = (event) => {
+          // Don't process results if waiting for LLM
+          if (isWaitingForLLM) {
+            return;
+          }
+          
+          let interimTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscriptRef.current += transcript + ' ';
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+          setSpeechText(finalTranscriptRef.current + interimTranscript);
+        };
+        
+        recognition.onend = () => {
+          console.log('Speech recognition ended');
+          setIsListening(false);
+          // Don't auto-send - let user choose via preview
+        };
+        
+        recognition.onerror = (event) => {
+          console.error('Speech recognition error:', event.error);
+          setIsListening(false);
+        };
+        
+        recognitionRef.current = recognition;
+      } else {
+        setIsMicDisabled(true);
+      }
+    };
+    
+    initSpeechRecognition();
+    
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (error) {
+          console.log('Error stopping recognition on cleanup:', error);
+        }
+      }
+    };
+  }, [currentChatId, isWaitingForLLM]);
   
   // Function to convert WebM to WAV
   const convertWebmToWav = async (webmBlob) => {
@@ -178,7 +203,7 @@ useEffect(() => {
     }
   };
   
-  // Modified start recording function
+  // Start recording function
   const startListeningAndRecording = async () => {
     if (!recognitionRef.current || isWaitingForLLM) return;
     
@@ -252,7 +277,7 @@ useEffect(() => {
     }
   };
   
-  // Modified stop recording function
+  // Stop recording function
   const stopListeningAndRecording = () => {
     console.log('Stopping recording - marking as inactive');
     
@@ -284,9 +309,12 @@ useEffect(() => {
     }, 100);
   };
   
-// Modified send recording function
+  // Send recording function
   const sendRecording = async () => {
     if (!audioBlob) return;
+    
+    // Stop any ongoing recording and recognition first
+    stopListeningAndRecording();
     
     // Ensure recording is marked as inactive
     isRecordingActiveRef.current = false;
@@ -301,7 +329,15 @@ useEffect(() => {
     // Add user message first
     if (text) {
       const userMessage = { text, type: 'user', timestamp: new Date() };
+      const currentChat = getCurrentChat();
+      const isFirstMessage = !currentChat || currentChat.messages.length === 0;
+      
       addMessageToChat(activeChatId, userMessage);
+      
+      // Update chat title if it's the first message
+      if (isFirstMessage) {
+        updateChatTitle(activeChatId, text);
+      }
       
       // Add processing message after user message
       const processingMessage = { 
@@ -334,8 +370,98 @@ useEffect(() => {
       addMessageToChat(activeChatId, errorMessage);
     }
   };
-
-
+  
+  // Handle retry - reset recording state and allow user to record again
+  const handleRetry = () => {
+    // Reset all recording-related state
+    setIsPreviewing(false);
+    setAudioUrl(null);
+    setAudioBlob(null);
+    setSpeechText('');
+    finalTranscriptRef.current = '';
+    setRecordingTime(3);
+    setIsWaitingForLLM(false);
+    setIsListening(false);
+    setIsProcessing(false);
+    
+    // Reset refs
+    isListeningRef.current = false;
+    isRecordingActiveRef.current = false;
+    audioChunksRef.current = [];
+    
+    // Revoke the audio URL to prevent memory leaks
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+    }
+    
+    // Stop any playing audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    
+    // Clear any active recording
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
+    // Reset media recorder
+    mediaRecorderRef.current = null;
+    
+    // Reset speech recognition
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.error('Error stopping recognition in retry:', e);
+      }
+    }
+    
+    // Reinitialize speech recognition
+    if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = "bn-BD";
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+      
+      recognition.onresult = (event) => {
+        // Don't process results if waiting for LLM
+        if (isWaitingForLLM) {
+          return;
+        }
+        
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscriptRef.current += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        setSpeechText(finalTranscriptRef.current + interimTranscript);
+      };
+      
+      recognition.onend = () => {
+        console.log('Speech recognition ended');
+        setIsListening(false);
+        // Don't auto-send - let user choose via preview
+      };
+      
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+      };
+      
+      recognitionRef.current = recognition;
+    } else {
+      setIsMicDisabled(true);
+    }
+  };
+  
   const toggleSpeechRecognition = () => {
     if (isPreviewing) {
       // If previewing, send the recording
@@ -454,9 +580,44 @@ useEffect(() => {
         speechTextRef.current = '';
       }
     } finally {
+      // Comprehensive state reset
       setIsProcessing(false);
-      setIsWaitingForLLM(false); // Re-enable recording button
+      setIsWaitingForLLM(false);
+      setIsListening(false);
+      setIsPreviewing(false);
       setActiveChatId(null);
+      
+      // Reset refs
+      isRecordingActiveRef.current = false;
+      isListeningRef.current = false;
+      
+      // Clean up audio resources after processing
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+        setAudioUrl(null);
+      }
+      setAudioBlob(null);
+      setSpeechText('');
+      finalTranscriptRef.current = '';
+      setRecordingTime(3);
+      
+      // Clear any active recording
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      
+      // Reset media recorder
+      mediaRecorderRef.current = null;
+      
+      // Reset speech recognition
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          console.error('Error stopping recognition in detectEmotion finally:', e);
+        }
+      }
     }
   };
   
@@ -494,6 +655,16 @@ useEffect(() => {
       }
       return chat;
     }));
+  };
+  
+  // Delete chat function
+  const deleteChat = (chatId) => {
+    setChats(prev => prev.filter(chat => chat.id !== chatId));
+    
+    // If the deleted chat is the current chat, reset currentChatId
+    if (currentChatId === chatId) {
+      setCurrentChatId(null);
+    }
   };
   
   // Get LLM responses
@@ -604,6 +775,7 @@ useEffect(() => {
         currentChatId={currentChatId}
         onSelectChat={handleSelectChat}
         onNewChat={handleNewChat}
+        onDeleteChat={deleteChat}
       />
       <div className="chat-container">
         <ChatBox messages={currentChatMessages} />
@@ -617,8 +789,9 @@ useEffect(() => {
           recordingTime={recordingTime}
           audioUrl={audioUrl}
           onPlayAudio={playRecordedAudio}
-          audioRef={audioRef}
-          isWaitingForLLM={isWaitingForLLM} // Pass this new prop
+          audioRef={audioRef} // Pass the ref from parent
+          isWaitingForLLM={isWaitingForLLM}
+          onRetry={handleRetry} // Pass the retry handler
         />
       </div>
     </div>

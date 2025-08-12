@@ -17,6 +17,16 @@ const LandingPage = () => {
             <h2>Incremental Learning</h2>
             <p>Improve model Bangla recognition skills</p>
           </Link>
+          <a 
+            href="https://localhost:3000/" 
+            className="option-card" 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            <div className="option-icon">🎙️</div>
+            <h2>Real-Time Emotion Detection</h2>
+            <p>Detect emotions instantly from your voice</p>
+          </a>
         </div>
       </div>
     </div>
