@@ -45,10 +45,24 @@ const getGenerateUrl = () => {
   return 'https://localhost:7000';
 };
 
+const getRealtimeUrl = () => {
+  const currentHost = window.location.hostname;
+  
+  // If accessing via IP address, use the same IP for backend
+  if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+    return `https://${currentHost}:3000`;
+  }
+  
+  // Default to localhost for local development
+  return 'https://localhost:3000';
+};
+
 export const API_BASE_URL = getBackendUrl();
 export const GENERATE_BASE_URL = getGenerateUrl();
+export const REALTIME_BASE_URL = getRealtimeUrl();
 export const ENDPOINTS = {
   INCREMENTAL_TRAIN: `${API_BASE_URL}/incremental-train`,
   DETECT_EMOTION: `${API_BASE_URL}/detect-emotion`,
   GENERATE: `${GENERATE_BASE_URL}/generate`,
+  REALTIME: `${REALTIME_BASE_URL}/realtime-emotion`
 };

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ENDPOINTS } from '../utils/config';
 
 const LandingPage = () => {
   return (
@@ -18,7 +19,7 @@ const LandingPage = () => {
             <p>Improve model Bangla recognition skills</p>
           </Link>
           <a 
-            href="https://localhost:3000/" 
+            href={ENDPOINTS.REALTIME} 
             className="option-card" 
             target="_blank" 
             rel="noopener noreferrer"
