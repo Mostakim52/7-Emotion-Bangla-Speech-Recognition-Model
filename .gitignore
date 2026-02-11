@@ -1,0 +1,212 @@
+# Git Ignore File - Bangla Speech Emotion Recognition
+# Excludes large files, temporary files, and environment configurations
+
+## Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+## Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv
+
+## PyPI credentials
+.pypirc
+
+## IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+
+## Jupyter Notebook
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+*.ipynb_checkpoints
+
+## Environment variables
+.env
+.env.local
+.env.*.local
+
+## Large Model Files (use Git LFS for these if needed)
+*.pth
+*.pt
+*.h5
+*.pkl
+*.pickle
+*.ckpt
+*.onnx
+*.pb
+*.tflite
+
+## Audio and Media Files (too large)
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+*.aac
+*.wma
+
+## Data directories (large datasets)
+data/
+datasets/
+raw_data/
+processed_data/
+*.csv
+*.xlsx
+*.xls
+
+## Build outputs
+dist/
+build/
+*.dmg
+*.iso
+*.egg
+
+## Test and Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+
+## Node/npm (frontend)
+node_modules/
+npm-debug.log
+npm-debug.log.*
+yarn-error.log
+yarn-debug.log*
+.pnpm-debug.log*
+dist/
+.next/
+out/
+
+## Package manager locks (keep these in repo actually)
+# Don't ignore:
+# package-lock.json
+# yarn.lock
+# requirements.txt
+
+## Flask/Backend
+Flask.egg-info/
+instance/
+.webassets-cache
+*.log
+
+## OS specific
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+## Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+## Linux
+.directory
+
+## Editor backups
+*.bak
+*.backup
+*.orig
+*~
+
+## VS Code
+.vscode/
+*.code-workspace
+
+## PyCharm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+## Temporary test outputs
+test_outputs/
+test_results/
+temp/
+tmp/
+*.tmp
+
+## Certificate files (if sensitive)
+*.pem
+*.key
+cert/key*
+cert/*key
+!cert/README.md
+
+## Local development
+local_config.py
+local_settings.py
+secrets.json
+
+## Docker
+.docker-sync
+docker-compose.override.yml
+
+## Kubernetes
+k8s/secrets/
+!k8s/secrets/README.md
+
+## CI/CD
+.github/workflows/secrets.json
+.gitlab-ci/secrets.yml
+.circleci/secrets.yml
+
+## Misc
+*.orig
+*.patch
+MANIFEST.in~
+.venv~
+
+# Allow certain important files even if they match patterns above
+!.gitkeep
+!.github/**/.gitkeep
+!research/**/.gitkeep
+!

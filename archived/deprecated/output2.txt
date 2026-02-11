@@ -1,0 +1,712 @@
+2025 28th International Conference on Computer and Information Technology (ICCIT) 
+19-21 December 2025, Cox’s Bazar, Bangladesh 
+979-8-3315-7867-1/25/$31.00 ©2025 IEEE  Hybrid CNN Bi-LSTM BSER: An Efficient Tool 
+for LLMs utilizing Incremental Learning 
+Mostakim Hossain 1, Md. Sakibul Alam Patwary2, Md. Musfiq Hossain3, Rashedur M. Rahman4, * 
+1-4 Electrical and Computer Engineering Department, North South University, Dhaka, Bangladesh 
+Email: mostakim.rubaiyat@gmail.com; sakibulalam7296@gmail.com; musfiqhossain22@gmail.com; 
+rashedur.rahman@northsouth.edu 
+ 
+Abstract—Speech Emotion Recognition (SER) in Bangla is 
+a growing yet underexplored area, despite the language being 
+spoken by over 230 million people. While state-of-the-art 
+models such as CNN-Transformer have achieved success in 
+highresource languages, their application to Bangla SER faces 
+critical challenges: scarcity and imbalance of datasets, 
+overfitting of complex architectures on low-resource data, and 
+limited attention to deployment efficiency and adaptability in 
+real-world settings. This paper addresses these gaps through 
+four incremental experiments that guided our design choices. 
+We show that: adding multiple Bangla datasets improves 
+generalization over single-dataset training, extensive 
+handcrafted feature combinations do not outperform MFCC 
+alone, noise-free datasets provide higher robustness, and a 
+hybrid CNN–BiLSTM architecture alleviates overfitting and 
+achieves state-of-the-art accuracy for Bangla SER. Our 
+proposed model achieves 82% accuracy across seven emotions, 
+outperforming prior Bangla SER baselines while remaining 
+lightweight enough for deployment on Raspberry Pi. 
+Furthermore, we extend SER beyond stand-alone classification 
+by integrating it with Large Language Models (LLMs) for 
+emotionally adaptive dialogue, and by introducing incremental 
+learning for future adaptability. This positions our work as one 
+of the first comprehensive studies to combine accuracy, 
+efficiency, and adaptability in Bangla SER.  
+Keywords—LLMs, CNN and Bi-LSTM, MFCC, Bangla 
+Speech Emotion Recognition 
+I. INTRODUCTION  
+Human AI interaction increasingly requires systems that 
+can infer and respond to users’ affective states in real time. 
+Speech emotion recognition (SER) addresses this need by 
+leveraging acoustic cues such as pitch, timbre, and temporal 
+dynamics to infer emotion when visual or textual signals are 
+unavailable. Although SER has advanced in high-resource 
+languages supported by large annotated corpora and modern 
+deep models, Bangla remains comparatively underexplored 
+due to persistent limitations in data scale, heterogeneity, and 
+deployment readiness.   
+This work addresses three critical gaps that hinder 
+progress in Bangla Speech Emotion Recognition (SER). The 
+first gap is about the availability of datasets, whose data are 
+limited and imbalanced. These datasets vary by recording 
+conditions and label sets and often underrepresent emotions 
+such as fear or surprise. The second gap relates to model 
+performance. Capacity‑heavy or transformer‑based 
+architectures trained on small corpora often overfit and 
+provide degrade out of domain performance. The third gap 
+involves practical deployment. Current approaches lack 
+pathways to achieve embedded efficiency, support 
+incremental learning, and enable integration into interactive 
+conversational and assistive settings. Overall effectiveness depends on the selection of suitable features, the design of 
+models that capture both local and long range patterns, and 
+careful consideration of the practical constraints associated 
+with real-time deployment. While high-resource languages 
+benefit from extensive corpora, Bangla SER remains 
+impeded by data scarcity and fragmentation. To address 
+these challenges, the study asks how combining 
+heterogeneous Bangla datasets affects generalization, 
+whether compact MFCC [1] only inputs can match or 
+surpass extensive handcrafted feature sets, which 
+architectures best balance accuracy and robustness under 
+limited and varied data, whether competitive accuracy can be 
+maintained on constrained hardware, and how SER can be 
+integrated with large language models to enable emotionally 
+adaptive interaction.   
+ A sequence of four experiments was conducted to 
+investigate these questions. Initial CNN-Transformer trials 
+exhibited pronounced overfitting despite augmentation and 
+broader feature banks. Subsequent analyses indicated that 
+dataset curation particularly the use of noise‑controlled 
+corpora contributes more to robustness than feature 
+proliferation. A hybrid CNN-BiLSTM architecture 
+ultimately mitigated overfitting and achieved strong accuracy 
+across emotions while remaining efficient for on‑device 
+inference. Beyond static classification, the system 
+demonstrates real‑time deployment on embedded hardware, 
+supports incremental learning, and integrates with an 
+LLM‑driven counseling agent to enable adaptive, 
+emotionally aware dialogue.   
+ This paper offers four core contributions. First, it 
+provides a principled evaluation across multiple Bangla 
+datasets, quantifying the roles of noise and dataset 
+composition in generalization. Second, it presents a 
+comparative feature study showing that compact MFCC only 
+input can match or exceed extensive handcrafted 
+combinations under low‑resource constraints. Third, it 
+introduces a lightweight hybrid CNN-BiLSTM model that 
+attains state‑of‑the‑art performance for Bangla SER while 
+reducing overfitting and preserving deployment efficiency. 
+Fourth, it demonstrates a practical, real‑time workflow on 
+embedded hardware and, to the authors’ knowledge, the first 
+integration of Bangla SER with an LLM for emotionally 
+adaptive interaction augmented by an incremental learning 
+framework. The remainder of the paper is organized as 
+follows: Section II reviews related work and describes 
+datasets, Section III presents the methodology, Section IV 
+reports experiments and results, Section V details 
+applications, and Section VI concludes with future 
+directions. 
+II. BACKGROUND  
+Speech Emotion Recognition (SER) infers affective 
+states from acoustic cues prosody, spectral shape, and 
+temporal [2] dynamics so systems can respond appropriately 
+in recording environments, label sets, and balance, which 
+complicates generalization. In particular, clean studio speech 
+with acted emotions behaves very differently from 
+in‑the‑wild clips sourced from media, and naively mixing 
+these conditions can inflate variance and encourage 
+overfitting in capacity‑heavy architectures. 
+In this regard, short spectral–prosodic features provide 
+good leverage even when data are small, with MFCCs 
+offering a concise representation of timbral structure that 
+maps well to perceived affect and avoids the redundancy of 
+large feature banks in small-to-medium data applications. 
+Among modeling choices, CNNs capture well–localized 
+time–frequency motifs, while recurrent units capture time 
+progression. Hybrids that combine these strengths are 
+desirable in edge applications, where latency and memory 
+are as much a consideration as accuracy [3][4]. Learning 
+across Bangla datasets suggests that selective curation of 
+noise-free speech where possible, harmonization of labels 
+across corpuses (e.g., clustering tightly related labels), and 
+standardization of clip lengths reduce distribution shift and 
+stabilize results across test conditions.  
+These realities create a clear gap: Bangla SER requires 
+lightweight methods that generalize across heterogeneous 
+corpora without collapsing to dataset‑specific quirks. We 
+address this by utilizing noise‑controlled data, compact 
+MFCC inputs, and an efficient lightweight CNN–BiLSTM 
+[5] model. This design ensures robust cross‑dataset 
+generalization and real‑time performance suitable for 
+incremental learning and conversational integration. 
+A. Dataset Description and Analysis 
+We aggregated all publicly available, high-quality Bangla 
+SER datasets and supplemented them with a private 
+collection, BanglaMOOD. The combined data spans two 
+distinct profiles: clean, actor-voiced studio recordings 
+(BanglaSER, SUBESCO, BANSpEmo) and in-the-wild clips 
+derived from TV broadcasts with natural background noise 
+(KBES, BanglaMOOD). With the exception of 
+BanglaMOOD, all datasets are gender-balanced.  
+For this study, we combined BanglaSER [6], SUBESCO 
+[7], BANSpEmo [8], KBES [9], and BanglaMOOD, 
+leveraging SUBESCO’s 7,000 clean samples for scale and 
+BANSpEmo’s 792 clips to cover rarer emotions (e.g., 
+surprise, fear). Datasets were standardized to 3‑second clips; 
+the mix of clean and noisy sources, and large and small sets, 
+provides a robust foundation for building models that 
+generalize across diverse speakers and acoustic conditions. 
+Table I details the distribution of emotion samples across the 
+five datasets used in this study. 
+TABLE I.  Dataset’s Distribution Based on Emotion  
+ Dataset 
+BanglaSER  KBES Bangl-
+MOOD SUBES-
+CO BANSpEmo 
+Angry 306 200 611 1000 132 
+Disgust/ 
+Disappointed  306 200 343 1000 132 
+Excitement  - - 267 - - 
+Fear - - 449 1000 132 
+Happy 306 200 300 1000 132 Neutral 243 100 610 1000 - 
+Sad 306 200 337 1000 132 
+Surprised  306 - 303 1000 132 
+ 
+III. METHODOLOGY  
+This portion details the organized strategy (illustrated in 
+Fig. 1) implemented to create and assess an effective model 
+for Bangla Speech Emotion Recognition (SER) that can 
+overcome overfitting. 
+ 
+ 
+Fig. 1. A Flowchart of Workflow  
+A. Experiment Overview 
+Our approach has a mission to build a robust model that 
+detects seven or more emotions [10]. It is done by leveraging 
+diverse datasets (summarized in Table II) and a hybrid deep 
+learning framework, structured into four phases: dataset 
+preparation, pre-processing, feature extraction, and model 
+design. To begin, we used CNN-Transformer [11] on noisy 
+data, which showed overfitting and low validation accuracy. 
+We attempted to solve it by experimenting with different 
+datasets and feature combinations. Next, we focused on 
+noise-free datasets to improve accuracy, and in the final 
+experiment, a revised model successfully overcame 
+overfitting while achieving strong performance. 
+Different dataset combinations and models used are:  
+TABLE II.  Experimental Overview 
+Experiment  Dataset Combination  Total 
+Samples  Model  
+Experiment 
+1  BanglaSER + KBES + 
+BanglaMOOD (121 
+fear).  
+Augmented Total = 
+3542  2,488  Hybrid 
+CNNTransformer  
+Experiment 
+2  SUBESCO + 
+BanglaMOOD + 
+KBES  11,120  Hybrid 
+CNNTransformer  
+Experiment 
+3  SUBESCO + 
+BanglaSER + 
+BANSpEmo  9,259  Hybrid 
+CNNTransformer  
+Experiment 
+4  SUBESCO + 
+BanglaSER + 
+BANSpEmo  9,259  Hybrid CNN and 
+Bi-LSTM   
+ 
+B. Data Preprocessing 
+Dataset labels were standardized by merging similar 
+categories, while also mapping disgust and disappointment 
+as a single emotion. All audio samples were normalized to 3 
+seconds. Longer clips were trimmed and shorter ones padded 
+with silence. It is chosen as a balanced average since most 
+samples ranged 2–4 seconds. To expand the dataset and add 
+variability, we applied pitch shifting, which changes pitch 
+without altering duration [12], and time stretching, which 
+adjusts speed or length without affecting pitch [13].  
+C. Feature Extraction 
+We experimented with various feature extraction 
+approaches, as outlined in Table III. It was done to identify 
+the most effective inputs for our models. 
+TABLE III.  Feature Extraction of Hybrid CNN-Transformer  
+Category Feature Name  Count Description 
+Core Spectral 
+Features MFCC, MFCC  
+Delta, Delta2 20 + 20 
++ 20 = 
+60 Mel-frequency 
+capturing spectral 
+envelope 
+Mel & Spectral 
+Features Log-Mel 
+Spectrogram + others  30 + 
+others = 
+47 Logarithmic 
+melscaled power 
+spectrum 
+Prosodic 
+Features Pitch + voice breaks 
++ others 10 Average 
+fundamental 
+frequency 
+VAD & Voice 
+Activity VAD Smoothed +  
+others 5 Smoothed voice 
+activity detection  
+Harmonic 
+Analysis HPR (Harmonic-  
+Percussive Ratio) + 
+Chroma + others  21 Energy ratio 
+between harmonic 
+and percussive 
+components 
+Formant 
+Features Formant frequencies 
+and ratios of F1, F2, 
+F3 5 First, second and 
+third formant 
+frequency 
+Voice Quality HNR (Harmonicsto-
+Noise Ratio) 1 Measure of vocal 
+clarity vs noise  
+Rhythm & 
+Temporal Tempo + Rhythm + 
+others 5 Estimated beats 
+per minute 
+Spectral 
+Dynamics Spectral Flux + ZCR 
++ others 8 Rate of spectral 
+change over time  
+Energy 
+Dynamics Energy Mean + Std + 
+Range + Slope  4 Energy level 
+ Total 166  
+ 
+The Hybrid CNN–BiLSTM approach starts with feature 
+extraction. 3-second audio files (16 kHz) are processed using 
+librosa library [14] in order to compute 40 MFCCs that 
+capture emotion-related sound features. The MFCCs are 
+arranged with time steps as rows and coefficients as 
+columns, and all segments are zero-padded to 94 time steps, 
+creating uniform 94×40 matrices for consistent deep learning 
+input. 
+D. Model Architecture 
+The models we focused on are Hybrid CNN-Transformer 
+and Hybrid CNN and Bi-LSTM. Both the models are 
+lightweight and efficient enough for real-time prediction 
+while still having a reasonable accuracy score. 
+1) Hybrid CNN-Transformer Architecture: We use a 
+hybrid CNN‑Transformer: a 1D CNN backbone extracts 
+local patterns while the Transformer models global 
+dependencies from inputs of size 140×500 built from MFCC 
+and log‑mel features [15]. The CNN has two blocks: 64 
+filters (kernel 3, dropout 0.3) with max pooling to 150 steps, then 128 filters (dropout 0.1) with adaptive max pooling to 
+250 steps—producing a tensor reshaped from (batch, 250, 
+31) to (batch, 250, 128) for a 2‑layer Transformer (d_model 
+128, 4 heads, FFN 512) whose outputs are concatenated 
+with CNN features into 256‑D per time step, flattened to 
+64,000, and fed to fully connected layers for 8‑class emotion 
+prediction.. 
+2) Hybrid CNN and Bi-LSTM Architecture(Prposed 
+Model): The model combines CNNs for feature extraction 
+and BiLSTMs for temporal modeling, processing input 
+sequences (B × 140 × 500) through two convolutional 
+blocks (64 and 128 filters) with normalization, pooling, and 
+dropout to capture audio patterns. Features then pass 
+through two stacked BiLSTMs to learn forward–backward 
+dependencies, with the final hidden state mapped through 
+fully connected and dropout layers to emotion classes. This 
+(detailed in Table IV) design leverages CNNs for acoustic 
+features and BiLSTMs for temporal dynamics, effectively 
+capturing both content and evolution of emotions in speech. 
+TABLE IV.  Hybrid CNN and Bi-LSTM Model Architecture 
+Layers  Parameters  Output Size 
+Input  -  Bx140x500 
+Conv1D + BatchNorm + 
+ReLU + Dropout (Block 
+1)  F=64, Kernel=5, S=1, 
+P=1, Dropout p=0.3  Bx64x500 
+MaxPool1D  Kernel = 2  Bx64x250 
+Conv1D + BatchNorm + 
+ReLU + Dropout (Block 
+2)  F=128, KS=5, P=2, 
+Dropout p=0.3  Bx128x250 
+MaxPool1D  Kernel=2  Bx128x125 
+Permute for LSTM  -  Bx128x128 
+BiLSTM Layer 1  Input=128, 
+Hidden=H,  
+Layers=N, Bi=True, 
+Dropout=0.3  Bx125x(2xH) 
+BiLSTM Layer 2  Input=2×H, 
+Hidden=H,  
+Layers=N, Bi=True, 
+Dropout=0.3  Bx125x(2xH) 
+Select Last Timestep  x = x[:, -1, :]  B × (2×H) 
+Fully Connected 1 + 
+ReLU + Dropout  Units=64, Dropout 
+p=0.3  B × 64 
+Fully Connected 2  Units=7 (Number of 
+Classes)  B × 7 
+(num_classes)  
+ 
+E. Training Configuration 
+In the first experiment, we trained a hybrid 
+CNNTransformer using AdamW, cross-entropy loss, MFCC 
+and log Mel-spectrogram features, and strong regularization, 
+with stable performance up to 100 epochs. Experiments 2 
+and 3 augmented this setup with further extended training 
+(up to 200 epochs), stricter validation tests, and default 
+MFCC inputs, but again failed with generalization. In 
+Experiment 4, shifting to CNN-BiLSTM with Adam, MFCC 
+feature, and simpler dropout-based regularization (without 
+batch normalization or weight decay) produced more robust 
+performance and improved generalization in emotion 
+detection. 
+IV. RESULTS AND ANALYSIS 
+Experiment Result and Analysis  
+In this section, we have conducted a series of 
+experiments and discussed the issues and results of the best 
+available model (CNN-Transformer) and the solution using 
+our proposed model. 
+A. Experiment 1: Hybrid CNN-Transformer with 
+Augmentation 
+We adopted the CNN‑Transformer model for real-time 
+detection of seven emotions using noise reduction, 
+augmentation, and MFCC/Log Mel-Spectrogram features. 
+The model achieved 97% accuracy with strong precision, 
+recall, and F1-scores across all classes. However, severe 
+overfitting and a large train–validation gap limited its 
+reliability for real-world usage. This suggests prompting 
+exploration of alternative datasets and models. 
+B. Experiment 2: Hybrid CNN-Transformer with Larger 
+Dataset (No Augmentation)  
+In this experiment, BanglaSER is replaced by 
+SUBESCO. It is merged with BanglaMOOD and KBES that 
+reduced overfitting, but dropped accuracy to 61% on 2,224 
+samples. Surprise performed moderate (F1=0.74), but Angry 
+was overpredicted (recall 0.90, precision 0.47) and 
+Disappointment was poor (23% recall). With macro and 
+weighted F1 at 0.60, the model showed weak generalization. 
+C. Experiment 3: SUBESCO + BanglaSER + BANSpEmo 
+Using Hybrid CNN-Transformer  
+This experiment used only noise-free datasets, replacing 
+KBSER and BanglaMOOD with studio-recorded BanglaSER 
+and BANSpEmo, similar to SUBESCO, enabling cleaner 
+emotion discrimination. The model achieved 77% accuracy 
+on 1,852 balanced samples, performing strongly for Neutral 
+(F1=0.83) and Fear (F1=0.80), with trade-offs such as high 
+recall but low precision for Disappointment (0.88/0.65) and 
+higher precision but moderate recall for Happy, Sad, and 
+Surprise; both macro and weighted F1 were 0.77, reflecting 
+stable performance. Overfitting was minimal, with best 
+generalization at epoch 12, while earlier stopping reduced 
+accuracy to ~70% but kept the train–validation gap under 
+10% at the expense of fine-grained discrimination. 
+D. Experiment 4: SUBESCO + BanglaSER + BANSpEmo 
+Using Hybrid CNN and Bi-LSTM  
+Overall, the hybrid CNN and Bi-LSTM performed the 
+best results. It performed well in each emotion detection with 
+high accuracy. The best validation accuracy is 83.59% test 
+accuracy was 82.18% with very less gap between training 
+accuracy and validation accuracy. Thus, the overfitting 
+problem with CNN-Transformer has been solved. The 
+classification report of the model is summarized in Table V. 
+TABLE V.   Classification Report for Experiment 4 
+ 
+Emotion  Precision  Recall  F1-Score  Support  
+Angry  0.82  0.86  0.84  144  
+Disgust  0.78  0.73  0.76  113  
+Fear  0.83  0.9  0.86  113  
+Happy  0.83  0.7  0.76  144  
+Neutral  0.92  0.98  0.95  124  
+Sad  0.87  0.79  0.83  144  
+Surprise  0.72  0.81  0.76  144  -  -  -  -  -  
+Accuracy  -  -  0.82  926  
+Macro avg  0.82  0.82  0.82  926  
+Weighted avg  0.82  0.82  0.82  926  
+ 
+The model achieved 82% accuracy (82% ± 1% weighted 
+average) across seven emotions. Furthermore, Neutral was 
+most accurate (F1=0.95) with minimal confusion. Onn the 
+other hand, Surprise, Happy, and Disgust had lower F1 
+scores (0.76). Happy displayed high precision (0.83) but low 
+recall (0.70), whereas Fear had the highest recall (0.90) with 
+moderate precision (0.83). Balanced macro and weighted 
+averages (0.82) confirm consistency, highlighting strengths 
+in clear states like Neutral/Fear and challenges with 
+acoustically similar emotions such as Happy–Surprise and 
+Disgust–Fear.  
+The training accuracy in “Fig. 2.” goes up from 25.14 % 
+to 92.72 %. Validation accuracy also goes up from 31.43 % 
+to 83.59 %. A gap of less than 10 % stays between these two 
+numbers during training. The gap ends at 9.13 %, and this 
+shows the model works well on new information - it also 
+shows the model is good for immediate use, because it acts 
+dependably on data it has not seen before.  
+ 
+Fig. 2. Confusion Matrix,  Training and Validation accuracy 
+of Hybrid CNN and Bi-LSTM (Exp 4) 
+ The accuracy chart shows the training accuracy, marked 
+in blue, goes up without sudden changes. The validation 
+accuracy, marked in orange, follows close behind. But the 
+orange line moves up and down a little, which means the 
+model learns without taking on too much detail from the 
+training data. The small difference between the lines proves 
+the model's firmness for recognizing feelings right away. 
+ 
+E. Experiment for Incremental Approach  
+An incremental approach [16, 17] was tested using 63 
+selfrecorded audio samples from three people across seven 
+emotions. Additional epoch training helped the model retain 
+previous knowledge while adapting quickly to new traits, 
+supporting long-term adaptability to evolving human 
+emotions. Though not fully accurate, the confusion matrices 
+(visualized in Fig. 3) show the model is close to generalizing 
+new data effectively. 
+ 
+Fig. 3. Confusion Matrix of Hybrid CNN – BiLSTM Model 
+before incremental training on new data.  
+F. Benchmarking Performance and Inference Efficiency 
+For the purpose of performance contextualization, the 
+proposed CNN-BiLSTM model was compared against state-
+of-the-art models such as CNN-Transformer, ECAPA-
+TDNN, and HuBERT, as summarized in Table VI. 
+ 
+TABLE VI.  Comparison of Proposed CNN-BiLSTM and state of 
+the art models.  
+Model Accuracy 
+(%) F1-Score (%)  Inference Time 
+(ms/sample)  Parameters
+CNN-BiLSTM 
+(Proposed model)  81.43 81.43 0.04 ~1.5M 
+CNN-Transformer  75.81 75.96 0.03 ~2M 
+ECAPA-TDNN 81.21 81.23 0.14 ~6M 
+HuBERT 89.31 89.36 1.13 ~95M 
+ 
+ Though HuBERT gives the best accuracy, it requires 
+95M parameters, which are not optimal for an embedded 
+system. On the other hand, our CNN-BiLSTM model 
+provides the best combination as it gives comparable 
+accuracy to ECAPA-TDNN (p = 0.9385, McNemar’s test) 
+but is 3.5x faster and 28x faster than HuBERT. 
+G. Impact of Feature Selection and Model Components  
+Our four-stage experiment functioned as an ablation 
+study to isolate feature and architecture contributions. 
+Comparing the findings of experiment 2 and experiments 3 and 4 indicates that the use of the detailed sets of features 
+increases the noise, thus hurting the discrimination. In 
+addition, comparing the experiment 1 and experiment 4 
+indicates that the use of the BiLSTM component 
+significantly reduces the inherent overfitting inside the 
+transformer model and maintains the high accuracy (82%) 
+and the low latency. 
+V. PRACTICAL USAGE AND APPLICATION  
+A. Application Structure 
+Our web application, whose frontend and backend data 
+flow is depicted in Fig. 4, has three pages, each serving a 
+role in the emotion-aware counseling framework [18, 19]. 
+ 
+Fig. 4. The Flow of Frontend & Backend in Emotion 
+Detection Application 
+ The Counseling Session Page supports voice-based 
+interaction with a DeepSeek-powered chatbot, where 3-
+second audio inputs are processed with MFCCs and a CNN-
+BiLSTM detector to identify emotions. As detailed in Table 
+VII, queries trigger emotion-aligned answers such as offering 
+a light sponge cake for sadness versus a celebratory vanilla 
+cake for happiness ensuring personalized, context-aware 
+interaction. 
+TABLE VII.  LLM’s Cake Recipe towards user’s emotion 
+Emotion Recipe 
+Type Ingredients and  
+Characteristics  Mood Alignment  
+Sad Light 
+Sponge Cake Minimal 
+ingredients; simple 
+whisking method; 
+low sugar/butter.  Reduces cognitive load 
+and effort; provides 
+gentle texture to ease 
+distress. 
+Happy Rich 
+Vanilla 
+Celebration 
+Cake High sugar, butter, 
+and eggs; rich and 
+indulgent profile.  Matches high energy; 
+reinforces excitement 
+through decadence.  
+Neutral Classic Butter 
+Pound Cake 
+ Standard, balanced 
+proportions; 
+traditional and 
+decoration-free Practical and familiar; 
+offers steady satisfaction 
+without emotional 
+intensity. 
+Disgust Fresh Lemon 
+Zest Cake Fresh citrus zest 
+and yogurt; 
+minimal oil; clean 
+flavor. Palate-clearing" 
+ingredients help reset the 
+senses and provide 
+renewal. 
+Surprise Structured 
+Academic 
+Guidance Methodical, formal 
+tone; detailed 
+numerical steps and 
+formulae. Counteracts shock with 
+logic; systematic 
+mastery stabilizes the 
+user. 
+Fear Empathetic 
+Confidence 
+Building Conversational, 
+reassuring tone; 
+validates anxiety 
+("I am with you"). Non-technical support 
+combats negative self-
+talk and builds 
+confidence. 
+Angry Vanilla 
+Chamomile 
+Cake Chamomile-infused 
+milk; mild honey 
+glaze; soft crumb. A "low-drama" baking 
+ritual designed to de-
+escalate and lower 
+emotional intensity. 
+ 
+ The Incremental Learning page facilitates model 
+adaptation by allowing users to add labeled samples for 
+background retraining and version-controlled updates. A 
+unified testing interface handles live or uploaded audio in 
+3‑second chunks for MFCC processing and CNN‑BiLSTM 
+inference, giving confidence scores, reports, and history 
+while supporting counseling, training, and testing in parallel. 
+Overall, our CNN‑BiLSTM system achieves 82% accuracy 
+across combined Bangla datasets, offers real-time usability 
+and adaptability, and sets a strong foundation for practical 
+applications, with future advances expected in multimodal 
+fusion, transfer learning, and personalization. 
+B. Hardware Implementation 
+The CNN–BiLSTM model was deployed entirely on a 
+Raspberry Pi 4B (4 GB RAM), where it consistently met 
+real-time requirements. It used only 20–40% CPU across the 
+four cores and about 418 MB RAM (~11% of total 
+memory). Across five runs, the average end-to-end 
+inference time per utterance was 87.83 ms, well below the 
+100–200 ms real-time threshold. These results confirm the 
+model’s efficient, practical on-device performance. 
+ 
+VI. CONCLUSION AND FUTURE WORK  
+Our Bangla speech-based real-time emotion recognition 
+system using CNN-BiLSTM advances emotion recognition 
+for low-resource languages like Bangla. With 82% accuracy, 
+incremental learning capabilities, and embedded efficiency, 
+it offers a robust foundation for practical, real-world 
+applications.  
+Beyond presenting an optimal solution, this study serves 
+as a commentary on the inherent complexities of Bangla 
+emotion recognition. By leveraging a composite dataset 
+(BanglaSER, KBES, and SUBESCO), we established a 
+diversified training context that exposes the model to varied 
+emotional displays, speaker identities, and acoustic 
+environments. While our current experimental design 
+utilized a stratified random split (80-10-10) to ensure class 
+balance across these disparate collections, future work will 
+adopt a Leave-One-Subject-Out (LOSO) validation strategy 
+to more rigorously assess the model's generalization across 
+fully independent speakers.  
+ Although further effort is required to adequately capture 
+full richness of human affect and demographic nuances, this 
+work marks a significant step toward inclusive Bangla SER. 
+Future refinements involving multimodal fusion and 
+personalized modeling will bring us closer to AI systems that 
+genuinely comprehend user emotions across diverse 
+linguistic and cultural contexts. 
+REFERENCES  
+[1] K. Yang, L. Zhu, and W. Shan, “Design of an ultra-low power MFCC 
+feature extraction circuit with embedded speech activity detector,” in 
+Proc. 2021 IEEE Int. Conf. Integrated Circuits, Technologies and Applications (ICTA), 2021, pp. 82–83. doi: 
+10.1109/ICTA53157.2021.9661980.  
+[2] M. Bhargava and T. Polzehl, “Improving automatic emotion 
+recognition from speech using rhythm and temporal feature,” 
+unpublished. 
+[3] T. N. Sainath, A. Mohamed, B. Kingsbury, and B. Ramabhadran, 
+“Deep Convolutional Neural Networks for LVCSR,” in Proc. IEEE 
+Int. Conf. Acoustics, Speech and Signal Processing (ICASSP), 
+Vancouver, Canada, 2013, pp. 8614–8618. doi: 
+10.1109/ICASSP.2013.6639347.  
+[4] A. Graves and J. Schmidhuber, “Framewise phoneme classification 
+with bidirectional LSTM and other neural network architectures,” 
+Neural Networks, vol. 18, no. 5, pp. 602–610, 2005. doi: 
+10.1016/j.neunet.2005.06.042.   
+[5] A. Islam, M. Foysal, and M. I. Ahmed, “Emotion recognition from 
+speech audio signals using CNN-BiLSTM hybrid model,” in Proc. 
+2024 3rd Int. Conf. Advancement in Electrical and Electronic 
+Engineering (ICAEEE), 2024, pp. 1–6. doi: 
+10.1109/ICAEEE62219.2024.10561755.  
+[6] R. K. Das, N. Islam, M. R. Ahmed, S. Islam, S. Shatabda, and A. K. 
+M. I. Islam, “Banglaser: a speech emotion recognition dataset for the 
+Bangla language,” Data in Brief, vol. 42, p. 108091, 2022. doi: 
+10.1016/j.dib.2022.108091.  
+[7] S. Sultana, M. S. Rahman, M. R. Selim, and M. Z. Iqbal, “Sust 
+Bangla emotional speech corpus (SUBESCO): an audio-only 
+emotional speech corpus for Bangla,” PLoS ONE, vol. 16, no. 4, p. 
+e0250173, 2021. doi: 10.1371/journal.pone.0250173. 
+[8] B. Sultana, M. G. Hussain, and M. Rahman, “BanSpEmo: a Bangla 
+audio dataset for speech emotion recognition and its baseline 
+evaluation,” Indonesian J. Elect. Eng. Comp. Sci., vol. 37, pp. 2044–
+2057, 2025. doi: 10.11591/ijeecs.v37.i3.pp2044-2057.  
+[9] M. M. Billah, M. L. Sarker, and M. A. H. Akhand, “Kbes: a dataset 
+for realistic Bangla speech emotion recognition with intensity level,” 
+Data in Brief, vol. 51, p. 109741, 2023. doi: 
+10.1016/j.dib.2023.109741. 
+[10] S. Cowen and D. Keltner, "Self-report captures 27 distinct categories 
+of emotion bridged by continuous gradients," Proc. Natl. Acad. Sci. 
+U.S.A., vol. 114, no. 38, pp. E7900-E7909, 2017, doi: 
+10.1073/pnas.1702247114.  
+[11]  S. M. H. A. Shuvo and R. Khan, “Bangla speech-based emotion 
+detection using a hybrid CNN-transformer approach,” in Proc. 2023 
+8th Int. Conf. Communication, Image and Signal Processing (CCISP), 
+2023, pp. 163–167. doi: 10.1109/CCISP59915.2023.10355685.  
+[12] I. Luengo, E. Navas, I. Saratxaga, I. Hernaez, and J. Sanchez, 
+“Evaluation of Pitch Detection Algorithms Under Real Conditions,” 
+in Proc. INTERSPEECH, 2007, pp. 2369–2372.   
+[13] J. Kane and C. Gobl, “Wavelet-based extraction of pitch period 
+perturbation features,” in Proc. INTERSPEECH, 2012, pp. 2366– 
+2369.  
+[14] S. G. Koolagudi, S. Maity, V. A. Kumar, S. Chakrabarti, and K. S. 
+Rao, "Speech Emotion Recognition Using RBF kernel of LIBSVM," 
+in Proc. IEEE Int'l Conf. Electronics Computer Technology (ICECT), 
+IEEE, 2015, pp. 1-5  
+[15] X. Zhang, L. Cheng, Y. Wang, and W. Xu, "An Audio Feature 
+Extraction Scheme Based on Spectral Decomposition Where the 
+Decomposition is Performed Iteratively by Matching-Pursuit," in 
+Proc. IEEE China Summit and Int'l Conf. Signal and Information 
+Processing (ChinaSIP), IEEE, 2014, pp. 311-315.  
+[16] J. Jiménez-Guarneros and J. Alejo-Eleuterio, “A ClassIncremental 
+Learning Method Based on Preserving the Learned Feature Space for 
+EEG-Based Emotion Recognition,” Mathematics, vol. 10, no. 4, pp. 
+598, 2022. doi: 10.3390/math10040598.  
+[17] T. Zhou and H. Beigi, “A Transfer Learning Method for Speech 
+Emotion Recognition from Automatic Speech Recognition (ASR),” 
+arXiv preprint, arXiv:2008.02863, 2020.  
+[18] P. R. Kumar and S. R. Nirmala, “Enhancing Human-Machine 
+Interaction: Real-Time Emotion Recognition through Speech 
+Analysis,” Journal of Computer Science Research, vol. 5, no. 2, pp. 
+42–50, 2023. doi: 10.30564/jcsr.v5i2.576  
+[19] M. A. Hossain, M. T. Islam, and S. H. Khan, “Real-time Speech 
+Emotion Recognition Using Deep Learning and Data Augmentation,” 
+Artificial Intelligence Review, vol. 57, pp. 1–22, 2024. doi: 
+10.1007/s10462-024-11065-x 
+ 
