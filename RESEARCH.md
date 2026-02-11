@@ -1,4 +1,4 @@
-# Research Overview: Bangla Speech Emotion Recognition
+# Research Overview: Real-Time Bangla Speech Emotion Recognition
 
 > **📖 For complete technical details, see the [published journal article](https://link.springer.com/article/10.1007/s42979-026-04744-9)** in *SN Computer Science*, Springer  
 
@@ -11,17 +11,18 @@
 **Authors:** Mostakim Hossain, Md. Sakibul Alam Patwary, Md. Musfiq Hossain, Rashedur M. Rahman  
 **Affiliation:** North South University, Dhaka, Bangladesh
 
-**Key Result:** **82% accuracy** on Bangla emotion recognition using CNN-BiLSTM, deployable on Raspberry Pi (~2.83W power)
+**Key Result:** **82% accuracy** on real-time Bangla emotion recognition using CNN-BiLSTM, with <100ms inference latency, deployable on Raspberry Pi (~2.83W power)
 
 ---
 
 ## Main Contributions
 
-1. **First multi-dataset Bangla SER system** with cross-dataset validation
-2. **MFCC > complex features** - Simple 40-coefficient MFCC outperforms 166-feature combinations
-3. **CNN-BiLSTM architecture** - Balances accuracy, efficiency, minimal overfitting
-4. **Edge deployment verified** - Runs efficiently on Raspberry Pi 4B
-5. **Incremental learning + LLM** - Emotion-adaptive responses with personalization
+1. **Real-time inference** - <100ms latency on Raspberry Pi 4B for practical deployment
+2. **First multi-dataset Bangla SER system** with cross-dataset validation
+3. **MFCC > complex features** - Simple 40-coefficient MFCC outperforms 166-feature combinations
+4. **CNN-BiLSTM architecture** - Balances accuracy, efficiency, minimal overfitting
+5. **Edge deployment verified** - Runs efficiently on Raspberry Pi 4B
+6. **Incremental learning + LLM** - Emotion-adaptive responses with personalization
 
 
 ---

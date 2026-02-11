@@ -1,6 +1,6 @@
 # Incremental Learning Guide
 
-This document explains how to use the incremental learning capability of the Bangla Speech Emotion Recognition system.
+This document explains how to use the incremental learning capability of the Real-Time Bangla Speech Emotion Recognition system.
 
 For full experimental details, see `docs/RESULTS.md` (Experiment 5) and the journal article.
 
