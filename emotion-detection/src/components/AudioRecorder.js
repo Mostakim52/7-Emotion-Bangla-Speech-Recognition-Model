@@ -916,6 +916,7 @@
 
 
 import { useEffect, useRef, useCallback } from 'react';
+import { API_ENDPOINTS } from '../config';
 
 const AudioRecorder = ({ onDetectionStart, onNewEmotion, isActive }) => {
   const isMountedRef = useRef(true);
@@ -926,11 +927,12 @@ const AudioRecorder = ({ onDetectionStart, onNewEmotion, isActive }) => {
   const mediaRecorderRef = useRef(null);
   const audioContextRef = useRef(null);
   const abortControllerRef = useRef(null);
+  const recordAudioRef = useRef(null);
   const isActiveRef = useRef(isActive); // Track isActive in a ref to avoid stale closures
 
   const RECORDING_DURATION = 3000;
   const DELAY_BETWEEN_RECORDINGS = 0;
-  const API_ENDPOINT = 'https://localhost:5000/detect-emotion';
+  const API_ENDPOINT = API_ENDPOINTS.detectEmotion;
   
   // Voice activity detection thresholds
   const MIN_VOLUME_THRESHOLD = 0.005;
@@ -1103,7 +1105,7 @@ const AudioRecorder = ({ onDetectionStart, onNewEmotion, isActive }) => {
     } finally {
       abortControllerRef.current = null;
     }
-  }, [onNewEmotion]);
+  }, [onNewEmotion, API_ENDPOINT]);
 
   const scheduleNextRecording = useCallback(() => {
     if (!isMountedRef.current || !isActiveRef.current) {
@@ -1123,7 +1125,9 @@ const AudioRecorder = ({ onDetectionStart, onNewEmotion, isActive }) => {
       timeoutRef.current = null;
       if (isMountedRef.current && isActiveRef.current && !isRecordingRef.current) {
         console.log('🔄 Starting next recording cycle');
-        recordAudio();
+        if (recordAudioRef.current) {
+          recordAudioRef.current();
+        }
       } else {
         console.log('🚫 Skipping next recording - conditions not met');
       }
@@ -1325,6 +1329,10 @@ const AudioRecorder = ({ onDetectionStart, onNewEmotion, isActive }) => {
     scheduleNextRecording,
     RECORDING_DURATION
   ]);
+
+  useEffect(() => {
+    recordAudioRef.current = recordAudio;
+  }, [recordAudio]);
 
   useEffect(() => {
     if (isActive) {

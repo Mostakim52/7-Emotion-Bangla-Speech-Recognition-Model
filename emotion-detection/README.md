@@ -1,70 +1,99 @@
-# Getting Started with Create React App
+# emotion-detection
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This directory is organized with separate backend and frontend apps:
 
-## Available Scripts
+- backend/: Flask + model inference APIs
+- frontend/: Unified web frontend (assistant, incremental learning, realtime emotion)
 
-In the project directory, you can run:
+## Run frontend
 
-### `npm start`
+```bash
+cd frontend
+npm install
+npm start
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Run backend
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```bash
+cd backend
+pip install -r requirements.txt
+python app.py
+```
+# Bangla SER Frontend
 
-### `npm test`
+> Repository organization update:
+> - Use `mood-app/` as the single frontend.
+> - Use `emotion-detection/backend/` for backend/model APIs.
+> - The frontend in `emotion-detection/src/` is kept as legacy reference and does not need to be run separately.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+React frontend for the 7-class Bangla Speech Emotion Recognition system.
 
-### `npm run build`
+This frontend records audio in the browser, sends it to the backend API, and displays predicted emotion labels in near real time.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Required Backend URL
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Set the backend base URL using `REACT_APP_API_BASE_URL`.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Examples:
+- Local backend: `http://localhost:5000`
+- Hugging Face Spaces backend: `https://your-space-name.hf.space`
 
-### `npm run eject`
+The app uses this base URL for:
+- `POST /detect-emotion`
+- `POST /switch-model`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Local Development
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+1. Install dependencies:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+npm install
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+2. Create `.env.local` in this folder:
 
-## Learn More
+```env
+REACT_APP_API_BASE_URL=http://localhost:5000
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+3. Start dev server:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+npm start
+```
 
-### Code Splitting
+Optional HTTPS local start (requires both cert files to exist):
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```bash
+npm run start:https
+```
 
-### Analyzing the Bundle Size
+## Production Build
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```bash
+npm run build
+```
 
-### Making a Progressive Web App
+## Vercel Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Configure this environment variable in your Vercel project:
 
-### Advanced Configuration
+- `REACT_APP_API_BASE_URL=https://your-space-name.hf.space`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Then deploy normally. CRA reads `REACT_APP_*` variables at build time.
 
-### Deployment
+## Scripts
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- `npm start`: Run dev server over HTTP
+- `npm run start:https`: Run dev server over HTTPS using local cert files
+- `npm run build`: Create production build
+- `npm test`: Run tests
 
-### `npm run build` fails to minify
+## Notes
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Browser microphone permission is required.
+- CORS must be enabled in your backend for your Vercel domain.
+- If using Hugging Face Spaces, ensure endpoints match exactly:
+	- `/detect-emotion`
+	- `/switch-model`

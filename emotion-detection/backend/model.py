@@ -7,6 +7,8 @@ import numpy as np
 SAMPLE_RATE = 16000
 DURATION = 3
 N_MFCC = 40
+MAX_LEN = 94
+EMOTIONS = ["Angry", "Disgust", "Fear", "Happy", "Neutral", "Sad", "Surprise"]
 
 class EmotionModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
@@ -55,6 +57,7 @@ class EmotionModel(nn.Module):
         return x
 
 def extract_features(file_path):
+    """Feature extraction must mirror Final CNN + BiLSTM notebook setup."""
     try:
         audio, sr = librosa.load(file_path, sr=SAMPLE_RATE, duration=DURATION)
         mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=N_MFCC)
@@ -68,7 +71,7 @@ def load_model(model_path):
     input_size = N_MFCC  # 40
     hidden_size = 128
     num_layers = 2
-    num_classes = 7  # Angry, Disgust, Fear, Happy, Neutral, Sad, Surprise
+    num_classes = len(EMOTIONS)
     
     model = EmotionModel(input_size, hidden_size, num_layers, num_classes)
     model.load_state_dict(torch.load(model_path, map_location='cpu'))
@@ -76,13 +79,12 @@ def load_model(model_path):
     return model
 
 def predict_emotion(model, features):
-    # Pad sequences to match training (max_len=94)
-    max_len = 94
-    if features.shape[0] < max_len:
-        pad_width = ((0, max_len - features.shape[0]), (0, 0))
+    # Pad/truncate exactly as used by real-time notebook inference.
+    if features.shape[0] < MAX_LEN:
+        pad_width = ((0, MAX_LEN - features.shape[0]), (0, 0))
         features = np.pad(features, pad_width, mode='constant')
     else:
-        features = features[:max_len, :]
+        features = features[:MAX_LEN, :]
     
     # Convert to tensor and add batch dimension
     features_tensor = torch.from_numpy(features).float().unsqueeze(0)
@@ -90,5 +92,4 @@ def predict_emotion(model, features):
     with torch.no_grad():
         output = model(features_tensor)
         pred_idx = torch.argmax(output, dim=1).item()
-        emotions = ["Angry", "Disgust", "Fear", "Happy", "Neutral", "Sad", "Surprise"]
-        return emotions[pred_idx]
+        return EMOTIONS[pred_idx]

@@ -74,6 +74,7 @@ Thumbs.db
 *.mp3
 *.flac
 *.ogg
+*.webm
 *.m4a
 *.aac
 *.wma
@@ -204,6 +205,13 @@ k8s/secrets/
 *.patch
 MANIFEST.in~
 .venv~
+
+## Runtime temp artifacts
+temp_input.*
+temp_output.*
+
+## Local FFmpeg bundle (keep local, do not commit binaries)
+ffmpeg/
 
 # Allow certain important files even if they match patterns above
 !.gitkeep

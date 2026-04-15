@@ -105,9 +105,10 @@
 
 // export default App;
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import EmotionDisplay from './components/EmotionDisplay';
 import AudioRecorder from './components/AudioRecorder';
+import { API_ENDPOINTS } from './config';
 import './App.css';
 
 function App() {
@@ -116,14 +117,9 @@ function App() {
   const [useIncrementalModel, setUseIncrementalModel] = useState(false);
   const [isListening, setIsListening] = useState(false);
 
-  // Switch model when toggle changes
-  useEffect(() => {
-    handleModelSwitch(useIncrementalModel ? 'incremental' : 'original');
-  }, [useIncrementalModel]);
-
-  const handleModelSwitch = async (modelType) => {
+  const handleModelSwitch = useCallback(async (modelType) => {
     try {
-      const response = await fetch('https://localhost:5000/switch-model', {
+      const response = await fetch(API_ENDPOINTS.switchModel, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,7 +128,7 @@ function App() {
       });
 
       if (response.ok) {
-        setCurrentEmotion(`Switched to ${modelType} model. ${isListening ? 'Listening...' : 'Press "Start Listening" to test!'}`);
+        setCurrentEmotion(`Switched to ${modelType} model. Press "Start Listening" to test!`);
       } else {
         const error = await response.json();
         setCurrentEmotion(`Error: ${error.error}`);
@@ -143,7 +139,12 @@ function App() {
       setCurrentEmotion('Network error when switching model');
       setUseIncrementalModel(modelType !== 'incremental');
     }
-  };
+  }, []);
+
+  // Switch model when toggle changes
+  useEffect(() => {
+    handleModelSwitch(useIncrementalModel ? 'incremental' : 'original');
+  }, [useIncrementalModel, handleModelSwitch]);
 
   const handleNewEmotion = (emotion) => {
     setIsProcessing(false);

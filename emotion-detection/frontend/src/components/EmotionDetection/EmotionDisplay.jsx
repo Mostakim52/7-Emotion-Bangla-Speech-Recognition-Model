@@ -14,7 +14,7 @@ const EmotionDisplay = ({ emotion, isProcessing }) => {
   };
 
   return (
-    <div 
+    <div
       className={`emotion-display ${isProcessing ? 'fade-out' : 'fade-in'}`}
       style={{ color: emotionColors[emotion] }}
     >
