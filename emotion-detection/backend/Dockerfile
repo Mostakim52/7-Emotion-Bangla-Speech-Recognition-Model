@@ -23,6 +23,7 @@ EXPOSE 10000
 ENV FLASK_APP=app.py
 ENV PYTHONUNBUFFERED=1
 ENV PORT=10000
+ENV FFMPEG_BIN=ffmpeg
 
 # Run with Gunicorn (production WSGI server)
 # Use a single worker to avoid memory spikes while loading torch models on small instances.

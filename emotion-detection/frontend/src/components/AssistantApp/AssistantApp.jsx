@@ -23,6 +23,8 @@ const AssistantApp = () => {
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
   const [isWaitingForLLM, setIsWaitingForLLM] = useState(false);
+  const [isBackendWaking, setIsBackendWaking] = useState(false);
+  const [backendWakeHint, setBackendWakeHint] = useState('Starting the model. This can take up to a minute on cold start.');
   
   const recognitionRef = useRef(null);
   const finalTranscriptRef = useRef('');
@@ -33,6 +35,76 @@ const AssistantApp = () => {
   const audioRef = useRef(null); // This will be passed to InputArea
   const speechTextRef = useRef('');
   const isRecordingActiveRef = useRef(false);
+
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const fetchWithTimeout = async (url, options = {}, timeoutMs = 25000) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      return response;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
+
+  const waitForBackendWarmup = async () => {
+    const maxAttempts = 12;
+    setIsBackendWaking(true);
+
+    try {
+      for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+        setBackendWakeHint(`Render is waking the backend (${attempt}/${maxAttempts}). Please wait...`);
+        try {
+          const healthResponse = await fetchWithTimeout(ENDPOINTS.HEALTH, { method: 'GET' }, 7000);
+          if (healthResponse.ok) {
+            setBackendWakeHint('Backend is ready. Finishing your request...');
+            return true;
+          }
+        } catch (error) {
+          // Ignore polling errors during warm-up attempts.
+        }
+        await sleep(4500);
+      }
+      return false;
+    } finally {
+      setIsBackendWaking(false);
+    }
+  };
+
+  const fetchWithRenderWakeup = async (url, options = {}, timeoutMs = 25000) => {
+    const isTransientStatus = (status) => [408, 429, 500, 502, 503, 504].includes(status);
+    const looksLikeNetworkOrTimeout = (error) => {
+      if (!error) return false;
+      if (error.name === 'AbortError') return true;
+      const message = String(error.message || error);
+      return /failed to fetch|network|timeout|load failed/i.test(message);
+    };
+
+    try {
+      const response = await fetchWithTimeout(url, options, timeoutMs);
+      if (!response.ok && isTransientStatus(response.status)) {
+        const isReady = await waitForBackendWarmup();
+        if (isReady) {
+          return await fetchWithTimeout(url, options, timeoutMs);
+        }
+      }
+      return response;
+    } catch (error) {
+      if (looksLikeNetworkOrTimeout(error)) {
+        const isReady = await waitForBackendWarmup();
+        if (isReady) {
+          return await fetchWithTimeout(url, options, timeoutMs);
+        }
+      }
+      throw error;
+    }
+  };
 
   const addThinkingMessage = (chatId, text = 'Generating answer...') => {
     addMessageToChat(chatId, {
@@ -511,10 +583,10 @@ const AssistantApp = () => {
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.wav');
       
-      const response = await fetch(ENDPOINTS.DETECT_EMOTION, {
+      const response = await fetchWithRenderWakeup(ENDPOINTS.DETECT_EMOTION, {
         method: 'POST',
         body: formData,
-      });
+      }, 30000);
       
       if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -683,7 +755,7 @@ const AssistantApp = () => {
   // Get LLM responses
   const getLLMResponse = async (text, emotion) => {
     try {
-      const response = await fetch(ENDPOINTS.GENERATE, {
+      const response = await fetchWithRenderWakeup(ENDPOINTS.GENERATE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -692,7 +764,7 @@ const AssistantApp = () => {
           message: text,
           emotion: emotion || ''
         }),
-      });
+      }, 35000);
       
       if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -777,6 +849,19 @@ const AssistantApp = () => {
   
   return (
     <div className="app">
+      {isBackendWaking && (
+        <div className="backend-wakeup-overlay" role="status" aria-live="polite">
+          <div className="backend-wakeup-card">
+            <div className="backend-wakeup-orbit" aria-hidden="true">
+              <span className="ring ring-a"></span>
+              <span className="ring ring-b"></span>
+              <span className="core"></span>
+            </div>
+            <h3>Waking Up The Model</h3>
+            <p>{backendWakeHint}</p>
+          </div>
+        </div>
+      )}
       <Sidebar 
         chats={chats} 
         currentChatId={currentChatId}
