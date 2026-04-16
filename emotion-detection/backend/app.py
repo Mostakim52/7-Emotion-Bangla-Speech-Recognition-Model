@@ -36,17 +36,19 @@ def _cleanup_file(path: Optional[str]) -> None:
 
 
 def _convert_to_wav(input_path: str, output_path: str) -> None:
-    ffmpeg_bin = os.getenv("FFMPEG_BIN", "ffmpeg")
+    configured_bin = os.getenv("FFMPEG_BIN", "ffmpeg")
 
-    # Resolve configured path relative to backend folder when needed.
-    if ffmpeg_bin not in {"ffmpeg", "ffmpeg.exe"} and not os.path.isabs(ffmpeg_bin):
-        ffmpeg_bin = os.path.join(BACKEND_DIR, ffmpeg_bin)
+    # Resolve configured path relative to backend folder only when a relative path is provided.
+    if configured_bin not in {"ffmpeg", "ffmpeg.exe"} and not os.path.isabs(configured_bin):
+        configured_bin = os.path.join(BACKEND_DIR, configured_bin)
 
     local_ffmpeg = os.path.abspath(os.path.join(BACKEND_DIR, "..", "..", "ffmpeg", "bin", "ffmpeg.exe"))
 
-    candidates = [ffmpeg_bin]
-    if local_ffmpeg not in candidates:
-        candidates.append(local_ffmpeg)
+    # Keep multiple candidates so a bad env var does not break cloud deployments.
+    candidates = []
+    for candidate in (configured_bin, "ffmpeg", "/usr/bin/ffmpeg", local_ffmpeg):
+        if candidate and candidate not in candidates:
+            candidates.append(candidate)
 
     last_error = None
     for candidate in candidates:
