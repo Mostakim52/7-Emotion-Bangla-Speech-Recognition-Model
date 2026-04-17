@@ -210,6 +210,248 @@ body::after {
   line-height: 1.45;
 }
 
+.contributors-section {
+  margin-top: 2.25rem;
+  text-align: left;
+  animation: reveal-up 620ms ease both;
+  animation-delay: 280ms;
+}
+
+.contributors-section h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.25vw, 1.85rem);
+  letter-spacing: -0.03em;
+  color: #0e2241;
+  margin-bottom: 1rem;
+}
+
+.contributors-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.contributor-card {
+  --hero-a: #95cbff;
+  --hero-b: #5ca6ff;
+  --hero-c: #8899ff;
+  --badge-bg: rgba(10, 22, 39, 0.85);
+  --stats-bg: rgba(7, 17, 31, 0.95);
+  --chip-bg: rgba(255, 255, 255, 0.46);
+  --chip-border: rgba(15, 46, 82, 0.25);
+  --link-color: #123f73;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  border: 1px solid rgba(16, 47, 85, 0.14);
+  border-radius: 22px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.92), rgba(246, 251, 255, 0.86));
+  box-shadow: 0 18px 36px rgba(19, 56, 96, 0.2);
+  transition: transform 300ms ease, box-shadow 300ms ease, border-color 300ms ease;
+  isolation: isolate;
+  min-height: 380px;
+}
+
+.contributor-card:hover,
+.contributor-card:focus-visible {
+  transform: translateY(-8px) rotateX(4deg);
+  box-shadow: 0 24px 44px rgba(15, 45, 79, 0.27);
+  border-color: rgba(17, 95, 183, 0.35);
+  outline: none;
+}
+
+.contributor-hero {
+  position: relative;
+  height: 140px;
+  border-radius: 18px 18px 14px 14px;
+  margin: 0.58rem 0.58rem 0;
+  padding: 0.8rem;
+  display: flex;
+  align-items: flex-end;
+  background:
+    radial-gradient(95% 85% at 15% 12%, rgba(255, 255, 255, 0.5), transparent 58%),
+    linear-gradient(130deg, var(--hero-a), var(--hero-b) 56%, var(--hero-c));
+  overflow: hidden;
+}
+
+.contributor-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.18) 0 12%, transparent 12% 100%),
+    radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.14) 0 5%, transparent 6%);
+  background-size: 24px 24px, 18px 18px;
+  opacity: 0.55;
+}
+
+.contributor-pulse {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  z-index: 2;
+  padding: 0.28rem 0.62rem;
+  border-radius: 999px;
+  background: var(--badge-bg);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.contributor-avatar-frame {
+  --avatar-zoom: 1.28;
+  position: relative;
+  left: 0;
+  bottom: 0;
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 5px solid #f4fbff;
+  box-shadow: 0 16px 26px rgba(13, 40, 74, 0.3);
+  transition: transform 280ms ease;
+  z-index: 2;
+}
+
+.contributor-avatar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  transform: translate(-50%, -50%) scale(var(--avatar-zoom));
+  transform-origin: center center;
+  transition: transform 280ms ease;
+}
+
+.contributor-card:hover .contributor-avatar-frame,
+.contributor-card:focus-visible .contributor-avatar-frame {
+  transform: translateY(-3px) rotate(-1.2deg);
+}
+
+.contributor-card:hover .contributor-avatar,
+.contributor-card:focus-visible .contributor-avatar {
+  transform: translate(-50%, -50%) scale(1.36);
+}
+
+.contributor-stats {
+  margin: 0.58rem;
+  margin-top: 0.52rem;
+  border-radius: 14px;
+  background: var(--stats-bg);
+  color: #e7efff;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  padding: 0.58rem 0.72rem;
+  box-shadow: 0 10px 16px rgba(8, 18, 34, 0.22);
+}
+
+.contributor-stats strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.contributor-stats span {
+  font-size: 0.72rem;
+  color: #a9bddb;
+}
+
+.contributor-body {
+  padding: 0.2rem 1rem 1rem;
+}
+
+.contributor-card h3 {
+  margin: 0.45rem 0 0.12rem;
+  color: #0f223d;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.contributor-handle {
+  margin: 0;
+  color: #496588;
+  font-size: 0.88rem;
+}
+
+.contributor-role {
+  margin: 0.16rem 0 0;
+  color: #1a3f6d;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.contributor-summary {
+  margin: 0.5rem 0 0;
+  color: #4b6787;
+  font-size: 0.9rem;
+  line-height: 1.42;
+}
+
+.contributor-joined {
+  margin: 0.45rem 0 0;
+  color: #5a7390;
+  font-size: 0.8rem;
+}
+
+.contributor-link {
+  margin-top: 0.8rem;
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--link-color);
+  transition: transform 240ms ease;
+}
+
+.contributor-card:hover .contributor-link,
+.contributor-card:focus-visible .contributor-link {
+  transform: translateX(4px);
+}
+
+.theme-cobalt {
+  --hero-a: #81d2ff;
+  --hero-b: #4d97ff;
+  --hero-c: #7f77ff;
+  --badge-bg: rgba(15, 34, 61, 0.86);
+  --stats-bg: linear-gradient(120deg, #09192f, #0f2747);
+  --chip-bg: rgba(209, 231, 255, 0.6);
+  --chip-border: rgba(37, 120, 201, 0.34);
+  --link-color: #0d4a85;
+}
+
+.theme-sunset {
+  --hero-a: #ffd18f;
+  --hero-b: #ff8b87;
+  --hero-c: #db67c8;
+  --badge-bg: rgba(63, 23, 30, 0.84);
+  --stats-bg: linear-gradient(120deg, #261322, #3a1b30);
+  --chip-bg: rgba(255, 228, 221, 0.72);
+  --chip-border: rgba(187, 84, 61, 0.34);
+  --link-color: #8d2f23;
+}
+
+.theme-aurora {
+  --hero-a: #8ee9d5;
+  --hero-b: #54c1b8;
+  --hero-c: #45a0de;
+  --badge-bg: rgba(8, 43, 47, 0.84);
+  --stats-bg: linear-gradient(120deg, #07262a, #0d3d45);
+  --chip-bg: rgba(219, 246, 242, 0.72);
+  --chip-border: rgba(36, 148, 132, 0.34);
+  --link-color: #0a685b;
+}
+
 /* Learning */
 .learning-container {
   display: flex;
@@ -1040,6 +1282,23 @@ body::after {
     padding: 1rem;
   }
 
+  .contributors-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contributor-card {
+    min-height: 0;
+  }
+
+  .contributor-hero {
+    height: 124px;
+  }
+
+  .contributor-avatar-frame {
+    width: 88px;
+    height: 88px;
+  }
+
   .learning-header {
     margin: 0.7rem 0.7rem 0;
     justify-content: flex-start;
@@ -1110,6 +1369,24 @@ body::after {
 
   .option-card {
     padding: 1.25rem 1rem;
+  }
+
+  .contributor-card {
+    padding: 0.9rem 0.85rem;
+  }
+
+  .contributor-hero {
+    margin: 0.35rem;
+    padding: 0.7rem;
+  }
+
+  .contributor-stats {
+    margin: 0.15rem 0.35rem 0;
+    padding: 0.52rem 0.6rem;
+  }
+
+  .contributor-body {
+    padding: 0.85rem 0.78rem 0.85rem;
   }
 
   .chat-container {
