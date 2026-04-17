@@ -8,10 +8,20 @@ const GENERATE_BASE_URL = trimTrailingSlashes(
   import.meta.env.VITE_GENERATE_API_BASE_URL || API_BASE_URL
 );
 
+const HF_TOKEN = import.meta.env.VITE_HF_TOKEN || '';
+
 export const ENDPOINTS = {
   INCREMENTAL_TRAIN: `${API_BASE_URL}/incremental-train`,
   DETECT_EMOTION: `${API_BASE_URL}/detect-emotion`,
   SWITCH_MODEL: `${API_BASE_URL}/switch-model`,
   HEALTH: `${API_BASE_URL}/health`,
   GENERATE: `${GENERATE_BASE_URL}/generate`,
+};
+
+export const getAuthHeaders = () => {
+  const headers = {};
+  if (HF_TOKEN) {
+    headers['Authorization'] = `Bearer ${HF_TOKEN}`;
+  }
+  return headers;
 };

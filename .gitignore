@@ -59,7 +59,7 @@ Thumbs.db
 .env.*.local
 
 ## Large Model Files (use Git LFS for these if needed)
-# *.pth
+*.pth
 *.pt
 *.h5
 *.pkl

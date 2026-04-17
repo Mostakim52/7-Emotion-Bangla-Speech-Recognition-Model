@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import ChatBox from './ChatBox';
 import InputArea from './InputArea';
-import { ENDPOINTS } from '../../utils/config';
+import { ENDPOINTS, getAuthHeaders } from '../../utils/config';
 
 const AssistantApp = () => {
   const navigate = useNavigate();
@@ -586,6 +586,7 @@ const AssistantApp = () => {
       const response = await fetchWithRenderWakeup(ENDPOINTS.DETECT_EMOTION, {
         method: 'POST',
         body: formData,
+        headers: getAuthHeaders(),
       }, 30000);
       
       if (!response.ok) {
@@ -759,6 +760,7 @@ const AssistantApp = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({
           message: text,

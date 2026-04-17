@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AudioRecorder from './AudioRecorder';
 import EmotionDisplay from './EmotionDisplay';
-import { ENDPOINTS } from '../../utils/config';
+import { ENDPOINTS, getAuthHeaders } from '../../utils/config';
 import './emotion-detection.css';
 
 const EmotionDetectionPage = () => {
@@ -17,6 +17,7 @@ const EmotionDetectionPage = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({ model_type: modelType }),
       });

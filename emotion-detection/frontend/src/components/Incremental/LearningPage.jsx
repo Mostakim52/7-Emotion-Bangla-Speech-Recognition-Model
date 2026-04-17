@@ -282,7 +282,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ENDPOINTS } from '../../utils/config';
+import { ENDPOINTS, getAuthHeaders } from '../../utils/config';
 
 const LearningPage = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -501,6 +501,7 @@ const LearningPage = () => {
       const response = await fetch(ENDPOINTS.INCREMENTAL_TRAIN, {
         method: 'POST',
         body: formData,
+        headers: getAuthHeaders(),
       });
       
       if (!response.ok) {

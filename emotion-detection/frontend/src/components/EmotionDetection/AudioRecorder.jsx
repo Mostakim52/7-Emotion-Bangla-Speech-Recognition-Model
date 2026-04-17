@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { ENDPOINTS } from '../../utils/config';
+import { ENDPOINTS, getAuthHeaders } from '../../utils/config';
 
 const RECORDING_DURATION = 3000;
 const DELAY_BETWEEN_RECORDINGS = 300;
@@ -61,6 +61,7 @@ const AudioRecorder = ({ onDetectionStart, onNewEmotion, isActive }) => {
         const response = await fetch(ENDPOINTS.DETECT_EMOTION, {
           method: 'POST',
           body: formData,
+          headers: getAuthHeaders(),
           signal: abortControllerRef.current.signal,
         });
 
